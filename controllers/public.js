@@ -2,7 +2,11 @@ const db = require('../utils/db')
 
 exports.getData = (req, res) => {
   try {
-    db.execute(db.atomic, `SELECT d.*, ds.status AS status FROM ${req.query.type} d LEFT JOIN ${req.query.type}_status ds ON d.status_id = ds.id`).then(data => {
+    let sql = `SELECT d.*, ds.status AS status FROM ${req.query.type} d LEFT JOIN ${req.query.type}_status ds ON d.status_id = ds.id WHERE 1`
+    sql += req.query.q ? ` AND (nama LIKE "%${req.query.q}%" OR referensi LIKE "%${req.query.q}%" OR deskripsi LIKE "%${req.query.q}%")` : ''
+    sql += req.query.stats ? ` AND ds.status = ${req.query.stats}` : ''
+    
+    db.execute(db.atomic, sql).then(data => {
       console.log('data', data)
       res.json(data)
     }).catch(e => {
